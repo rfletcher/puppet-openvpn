@@ -24,7 +24,7 @@ crl-verify /etc/openvpn/<%= @ca_name %>/crl.pem
 <% end -%>
 <% if @proto == 'tcp' -%>
 proto <%= @proto %>-server
-<% elsif @ptoto -%>
+<% elsif @proto -%>
 proto <%= @proto %>
 <% end -%>
 <% if @nobind -%>
