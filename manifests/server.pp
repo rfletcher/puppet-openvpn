@@ -431,6 +431,7 @@ define openvpn::server(
   $autostart                 = undef,
   $ns_cert_type              = true,
   $nobind                    = false,
+  $ifconfig                  = undef,
   $custom_options            = {},
 ) {
 
