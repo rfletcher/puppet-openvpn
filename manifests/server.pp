@@ -318,6 +318,11 @@
 #   Boolean. Whether or not to bind to a specific port number.
 #   Default: false
 #
+# [*mode*]
+#   String. Set OpenVPN major mode. Set to 'p2p' for a peer-to-peer setup.
+#   Default: undef (Autodetect client or server from other settings.)
+#   Options: client, server or p2p
+
 # [*custom_options*]
 #   Hash of additional options that you want to append to the configuration file.
 #
@@ -431,12 +436,22 @@ define openvpn::server(
   $autostart                 = undef,
   $ns_cert_type              = true,
   $nobind                    = false,
+  $mode                      = undef,
   $custom_options            = {},
 ) {
 
   include openvpn
   Class['openvpn::install'] ->
   Openvpn::Server[$name]
+
+  if $mode {
+    $real_mode = $mode
+  } else {
+    $real_mode = $remote ? {
+      undef   => 'client',
+      default => 'server',
+    }
+  }
 
   if $::openvpn::manage_service {
     if $::openvpn::params::systemd {
@@ -470,71 +485,73 @@ define openvpn::server(
     default => $group
   }
 
-  if $shared_ca {
-    $ca_name = $shared_ca
-  } else {
-    $ca_name = $name
-  }
-
   File {
     group => $group_to_set,
   }
 
-  file { "/etc/openvpn/${name}":
-    ensure => directory,
-    mode   => '0750',
-    notify => $lnotify,
-  }
-
-  if !$remote {
-    if !$shared_ca {
-      # VPN Server Mode
-      if $country == undef { fail('country has to be specified in server mode') }
-      if $province == undef { fail('province has to be specified in server mode') }
-      if $city == undef { fail('city has to be specified in server mode') }
-      if $organization == undef { fail('organization has to be specified in server mode') }
-      if $email == undef { fail('email has to be specified in server mode') }
-
-      $ca_common_name = $common_name
-      ::openvpn::ca { $name:
-        country      => $country,
-        province     => $province,
-        city         => $city,
-        organization => $organization,
-        email        => $email,
-        common_name  => $common_name,
-        group        => $group,
-        ssl_key_size => $ssl_key_size,
-        ca_expire    => $ca_expire,
-        key_expire   => $key_expire,
-        key_cn       => $key_cn,
-        key_name     => $key_name,
-        key_ou       => $key_ou,
-        tls_auth     => $tls_auth,
-      }
+  if $real_mode != 'p2p' {
+    if $shared_ca {
+      $ca_name = $shared_ca
     } else {
-      if !defined(Openvpn::Ca[$shared_ca]) {
-        fail("Openvpn::ca[${name}] is not defined for shared_ca")
-      }
-      $ca_common_name = getparam(Openvpn::Ca[$shared_ca], 'common_name')
+      $ca_name = $name
     }
 
-    file {
-      [ "/etc/openvpn/${name}/auth",
-      "/etc/openvpn/${name}/client-configs",
-      "/etc/openvpn/${name}/download-configs" ]:
+    file { "/etc/openvpn/${name}":
+      ensure => directory,
+      mode   => '0750',
+      notify => $lnotify,
+    }
+
+    if $real_mode == 'server' {
+      if !$shared_ca {
+        # VPN Server Mode
+        if $country == undef { fail('country has to be specified in server mode') }
+        if $province == undef { fail('province has to be specified in server mode') }
+        if $city == undef { fail('city has to be specified in server mode') }
+        if $organization == undef { fail('organization has to be specified in server mode') }
+        if $email == undef { fail('email has to be specified in server mode') }
+
+        $ca_common_name = $common_name
+        ::openvpn::ca { $name:
+          country      => $country,
+          province     => $province,
+          city         => $city,
+          organization => $organization,
+          email        => $email,
+          common_name  => $common_name,
+          group        => $group,
+          ssl_key_size => $ssl_key_size,
+          ca_expire    => $ca_expire,
+          key_expire   => $key_expire,
+          key_cn       => $key_cn,
+          key_name     => $key_name,
+          key_ou       => $key_ou,
+          tls_auth     => $tls_auth,
+        }
+      } else {
+        if !defined(Openvpn::Ca[$shared_ca]) {
+          fail("Openvpn::ca[${name}] is not defined for shared_ca")
+        }
+        $ca_common_name = getparam(Openvpn::Ca[$shared_ca], 'common_name')
+      }
+
+      file {
+        [ "/etc/openvpn/${name}/auth",
+        "/etc/openvpn/${name}/client-configs",
+        "/etc/openvpn/${name}/download-configs" ]:
+          ensure  => directory,
+          mode    => '0750',
+          recurse => true,
+      }
+    } else {
+      # VPN Client Mode
+      $ca_common_name = $name
+
+      file { "/etc/openvpn/${name}/keys":
         ensure  => directory,
         mode    => '0750',
         recurse => true,
-    }
-  } else {
-    # VPN Client Mode
-    $ca_common_name = $name
-
-    file { "/etc/openvpn/${name}/keys":
-      ensure  => directory,
-      mode    => '0750',
-      recurse => true,
+      }
     }
   }
 

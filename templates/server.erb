@@ -1,4 +1,5 @@
-<% unless @remote -%>
+<% if @real_mode != 'p2p' -%>
+<% if $real_mode == 'server' -%>
 mode server
 client-config-dir /etc/openvpn/<%= @name %>/client-configs
 <% else -%>
@@ -6,25 +7,29 @@ client
 <% if @ns_cert_type -%>
 ns-cert-type server
 <% end -%>
-<% @remote.to_a.each do |rem| -%>
-remote <%= rem %>
-<% end -%>
 <% if @server_poll_timeout -%>
 server-poll-timeout <%= @server_poll_timeout %>
 <% end -%>
 <% end -%>
+<% end -%>
+<% @remote.to_a.each do |rem| -%>
+remote <%= rem %>
+<% end -%>
+
+<% if @ca_name -%>
 ca /etc/openvpn/<%= @ca_name %>/keys/ca.crt
 cert /etc/openvpn/<%= @ca_name %>/keys/<%= @ca_common_name %>.crt
 key /etc/openvpn/<%= @ca_name %>/keys/<%= @ca_common_name %>.key
-<% unless @remote -%>
-dh /etc/openvpn/<%= @ca_name %>/keys/dh<%= @ssl_key_size %>.pem
-<% end -%>
-<% unless @remote -%>
+<% if $real_mode == 'server' -%>
 crl-verify /etc/openvpn/<%= @ca_name %>/crl.pem
+<% end -%>
+<% end -%>
+<% if $real_mode == 'server' -%>
+dh /etc/openvpn/<%= @ca_name %>/keys/dh<%= @ssl_key_size %>.pem
 <% end -%>
 <% if @proto == 'tcp' -%>
 proto <%= @proto %>-server
-<% else -%>
+<% elsif @proto -%>
 proto <%= @proto %>
 <% end -%>
 <% if @nobind -%>
@@ -141,7 +146,7 @@ ping-timer-rem
 <% if @tls_auth -%>
 # tls authentification
 tls-auth /etc/openvpn/<%= @name %>/keys/ta.key
-<% unless @remote -%>
+<% if $real_mode == 'server' -%>
 key-direction 0
 <% else -%>
 key-direction 1
