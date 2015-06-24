@@ -543,7 +543,7 @@ define openvpn::server(
           mode    => '0750',
           recurse => true,
       }
-    } else {
+    } else if $real_mode == 'client' {
       # VPN Client Mode
       $ca_common_name = $name
 
