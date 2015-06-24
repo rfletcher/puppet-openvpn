@@ -24,12 +24,12 @@ crl-verify /etc/openvpn/<%= @ca_name %>/crl.pem
 <% end -%>
 <% if @proto == 'tcp' -%>
 proto <%= @proto %>-server
-<% else -%>
+<% elsif @ptoto -%>
 proto <%= @proto %>
 <% end -%>
 <% if @nobind -%>
 nobind
-<% else -%>
+<% elsif @port -%>
 port <%= @port %>
 <% end -%>
 <% if @real_tls_server -%>
@@ -38,21 +38,31 @@ tls-server
 <% if @tls_client -%>
 tls-client
 <% end -%>
-<% if @compression != '' -%>
-<%= @compression %>
+<% if @comp_lzo == true -%>
+comp-lzo
+<% elsif @comp_lzo -%>
+comp-lzo <%= @comp_lzo %>
 <% end -%>
+<% if @group_to_set -%>
 group <%= @group_to_set %>
+<% end -%>
+<% if @user -%>
 user <%= @user %>
+<% end -%>
 <% if @logfile -%>
 log-append <%= @logfile %>
 <% end -%>
-status <%= @status_log %>
+<% if @real_status_log -%>
+status <%= @real_status_log %>
+<% end -%>
 <% if @status_version != '' -%>
 status-version <%= @status_version %>
 <% end -%>
+<% if @dev -%>
 dev <%= @dev %>
-<% if @local != '' -%>
-local <%= @local %>
+<% end -%>
+<% if @real_local -%>
+local <%= @real_local %>
 <% end -%>
 <% if @ipp -%>
 ifconfig-pool-persist <%= @name %>/vpn-ipp.txt
@@ -84,7 +94,7 @@ rcvbuf <%= @rcvbuf %>
 <% if @keepalive != '' -%>
 keepalive <%= @keepalive %>
 <% end -%>
-<% if @topology != '' -%>
+<% if @topology -%>
 topology <%= @topology %>
 <% end -%>
 <% if @verb != '' -%>
@@ -151,7 +161,6 @@ key-direction 1
 fragment <%= @fragment %>
 <% end -%>
 
-#Additional custom options
 <% @custom_options.each_pair do |key, value| -%>
 <%= key %> <%= value %>
 <% end -%>

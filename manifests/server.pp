@@ -32,10 +32,10 @@
 #   String.  Common name to be used for the SSL certificate
 #   Default: server
 #
-# [*compression*]
-#   String.  Which compression algorithim to use
-#   Default: comp-lzo
-#   Options: comp-lzo or '' (disable compression)
+# [*comp_lzo*]
+#   String.  Use compressionWhich compression algorithim to use
+#   Default: undef
+#   Options: true, yes, no, adaptive
 #
 # [*dev*]
 #   String.  TUN/TAP virtual network device
@@ -62,8 +62,8 @@
 #
 # [*local*]
 #   String.  Interface for openvpn to bind to.
-#   Default: $::ipaddress_eth0
-#   Options: An IP address or '' to bind to all ip addresses
+#   Default: undef
+#   Options: true to bind to eth0, an IP address, or undef to bind to all ip addresses
 #
 # [*logfile*]
 #   String.  Logfile for this openvpn server
@@ -363,18 +363,18 @@ define openvpn::server(
   $email                     = undef,
   $remote                    = undef,
   $common_name               = 'server',
-  $compression               = 'comp-lzo',
-  $dev                       = 'tun0',
-  $user                      = 'nobody',
-  $group                     = false,
+  $comp_lzo                  = undef,
+  $dev                       = undef,
+  $user                      = undef,
+  $group                     = undef,
   $ipp                       = false,
   $duplicate_cn              = false,
-  $local                     = $::ipaddress_eth0,
+  $local                     = undef,
   $logfile                   = false,
-  $port                      = '1194',
-  $proto                     = 'tcp',
+  $port                      = undef,
+  $proto                     = undef,
   $status_version            = '',
-  $status_log                = "/var/log/openvpn/${name}-status.log",
+  $status_log                = undef,
   $server                    = '',
   $server_ipv6               = '',
   $server_bridge             = '',
@@ -384,7 +384,7 @@ define openvpn::server(
   $keepalive                 = '',
   $fragment                  = false,
   $ssl_key_size              = 1024,
-  $topology                  = 'net30',
+  $topology                  = undef,
   $c2c                       = false,
   $tcp_nodelay               = false,
   $ccd_exclusive             = false,
@@ -474,6 +474,16 @@ define openvpn::server(
     $ca_name = $shared_ca
   } else {
     $ca_name = $name
+  }
+
+  $real_local = $local ? {
+    true    => $::ipaddress_eth0,
+    default => $local,
+  }
+
+  $real_status_log = $status_log ? {
+    true    => "/var/log/openvpn/${name}-status.log",
+    default => $status_log,
   }
 
   File {
