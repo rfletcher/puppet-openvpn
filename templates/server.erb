@@ -1,5 +1,5 @@
 <% if @real_mode != 'p2p' -%>
-<% if $real_mode == 'server' -%>
+<% if @real_mode == 'server' -%>
 mode server
 client-config-dir /etc/openvpn/<%= @name %>/client-configs
 <% else -%>
@@ -20,11 +20,11 @@ remote <%= rem %>
 ca /etc/openvpn/<%= @ca_name %>/keys/ca.crt
 cert /etc/openvpn/<%= @ca_name %>/keys/<%= @ca_common_name %>.crt
 key /etc/openvpn/<%= @ca_name %>/keys/<%= @ca_common_name %>.key
-<% if $real_mode == 'server' -%>
+<% if @real_mode == 'server' -%>
 crl-verify /etc/openvpn/<%= @ca_name %>/crl.pem
 <% end -%>
 <% end -%>
-<% if $real_mode == 'server' -%>
+<% if @real_mode == 'server' -%>
 dh /etc/openvpn/<%= @ca_name %>/keys/dh<%= @ssl_key_size %>.pem
 <% end -%>
 <% if @proto == 'tcp' -%>
@@ -156,7 +156,7 @@ ping-timer-rem
 <% if @tls_auth -%>
 # tls authentification
 tls-auth /etc/openvpn/<%= @name %>/keys/ta.key
-<% if $real_mode == 'server' -%>
+<% if @real_mode == 'server' -%>
 key-direction 0
 <% else -%>
 key-direction 1
