@@ -33,7 +33,7 @@
 #   Default: server
 #
 # [*comp_lzo*]
-#   String.  Use compressionWhich compression algorithim to use
+#   String.  Use compression
 #   Default: undef
 #   Options: true, yes, no, adaptive
 #

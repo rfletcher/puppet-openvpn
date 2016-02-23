@@ -5,8 +5,10 @@ key keys/<%= @name %>/<%= @name %>.key
 dev <%= @dev %>
 proto <%= @proto %>
 remote <%= @remote_host %> <%= @port %>
-<% if @compression != '' -%>
-<%= @compression %>
+<% if @comp_lzo == true -%>
+comp-lzo
+<% elsif @comp_lzo -%>
+comp-lzo <%= @comp_lzo %>
 <% end -%>
 resolv-retry <%= @resolv_retry %>
 auth-retry <%= @auth_retry %>

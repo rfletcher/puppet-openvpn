@@ -10,10 +10,10 @@
 #   String.  Name of the corresponding openvpn endpoint
 #   Required
 #
-# [*compression*]
-#   String.  Which compression algorithim to use
-#   Default: comp-lzo
-#   Options: comp-lzo or '' (disable compression)
+# [*comp_lzo*]
+#   String.  Use compression
+#   Default: undef
+#   Options: true, yes, no, adaptive
 #
 # [*dev*]
 #   String.  Device method
@@ -163,7 +163,7 @@
 #
 define openvpn::client(
   $server,
-  $compression          = 'comp-lzo',
+  $comp_lzo             = undef,
   $dev                  = 'tun',
   $mute                 = '20',
   $mute_replay_warnings = true,
